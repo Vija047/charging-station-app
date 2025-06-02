@@ -106,7 +106,7 @@
           type="submit"
           class="inline-flex justify-center items-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition duration-200"
         >
-          <span v-if="!isLoading">Save Station</span>
+          <span v-if="!isLoading" @click="handleSubmit">Save Station</span>
           <span v-else>Saving...</span>
         </button>
       </div>
@@ -118,163 +118,174 @@
   </div>
 </template>
 
-<script>
-import { ref, reactive, onMounted } from 'vue';
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-export default {
-  name: 'ChargingStationForm',
-  setup() {
-    const station = reactive({
-      name: '',
-      latitude: null,
-      longitude: null,
-      powerOutput: '',
-      connectorType: '',
-      status: 'Active'
-    });
+const router = useRouter()
+const mapRef = ref(null)
+const isLoading = ref(false)
+const message = ref('')
+const messageType = ref('success')
+let mapInstance = null
+let marker = null
 
-    const isLoading = ref(false);
-    const message = ref('');
-    const messageType = ref('success');
-    const mapRef = ref(null);
-    let mapInstance = null;
-    let marker = null;
+const station = reactive({
+  name: '',
+  latitude: null,
+  longitude: null,
+  powerOutput: '',
+  connectorType: '',
+  status: 'Active'
+})
 
-    const showMessage = (text, type = 'success') => {
-      message.value = text;
-      messageType.value = type;
-      setTimeout(() => (message.value = ''), 5000);
-    };
+const showMessage = (text, type = 'success') => {
+  message.value = text
+  messageType.value = type
+  setTimeout(() => (message.value = ''), 5000)
+}
 
-    const handleSubmit = async () => {
-      if (!station.latitude || !station.longitude) {
-        showMessage('Please select a location on the map', 'error');
-        return;
-      }
-
-      isLoading.value = true;
-      message.value = '';
-
-      try {
-        const response = await fetch('http://localhost:5000/api/stations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: station.name,
-            location: {
-              latitude: station.latitude,
-              longitude: station.longitude
-            },
-            status: station.status,
-            powerOutput: parseFloat(station.powerOutput),
-            connectorType: station.connectorType
-          })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to create station');
-        }
-
-        showMessage('Station added successfully!', 'success');
-        resetForm();
-      } catch (err) {
-        console.error('Error:', err);
-        showMessage(err.message || 'Failed to save station', 'error');
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    const resetForm = () => {
-      Object.assign(station, {
-        name: '',
-        latitude: null,
-        longitude: null,
-        powerOutput: '',
-        connectorType: '',
-        status: 'Active'
-      });
-
-      if (marker && mapInstance) {
-        mapInstance.removeLayer(marker);
-        marker = null;
-      }
-    };
-
-    const getCurrentLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          ({ coords }) => {
-            const { latitude, longitude } = coords;
-            if (mapInstance) {
-              mapInstance.setView([latitude, longitude], 15);
-              if (marker) mapInstance.removeLayer(marker);
-              marker = window.L.marker([latitude, longitude])
-                .addTo(mapInstance)
-                .bindPopup(`📍 Current Location<br>Lat: ${latitude.toFixed(6)}<br>Lng: ${longitude.toFixed(6)}`)
-                .openPopup();
-              station.latitude = parseFloat(latitude.toFixed(6));
-              station.longitude = parseFloat(longitude.toFixed(6));
-            }
-          },
-          () => showMessage('Unable to get your location. Please select manually on the map.', 'error')
-        );
-      } else {
-        showMessage('Geolocation is not supported by this browser.', 'error');
-      }
-    };
-
-    onMounted(() => {
-      if (!window.L) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = initMap;
-        document.head.appendChild(script);
-      } else {
-        initMap();
-      }
-    });
-
-    const initMap = () => {
-      const defaultLat = 12.9716;
-      const defaultLng = 77.5946;
-
-      mapInstance = window.L.map(mapRef.value).setView([defaultLat, defaultLng], 13);
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(mapInstance);
-
-      mapInstance.on('click', (e) => {
-        const { lat, lng } = e.latlng;
-        if (marker) mapInstance.removeLayer(marker);
-        marker = window.L.marker([lat, lng])
-          .addTo(mapInstance)
-          .bindPopup(`📍 Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`)
-          .openPopup();
-
-        station.latitude = parseFloat(lat.toFixed(6));
-        station.longitude = parseFloat(lng.toFixed(6));
-      });
-    };
-
-    return {
-      station,
-      mapRef,
-      handleSubmit,
-      isLoading,
-      getCurrentLocation,
-      message,
-      messageType,
-    };
+const handleSubmit = async () => {
+  if (!station.latitude || !station.longitude) {
+    showMessage('Please select a location on the map', 'error')
+    return
   }
-};
+
+  isLoading.value = true
+  message.value = ''
+
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      throw new Error('Please login to add a station')
+    }
+
+    const response = await fetch('http://localhost:5000/api/stations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: station.name,
+        location: {
+          latitude: station.latitude,
+          longitude: station.longitude
+        },
+        status: station.status,
+        powerOutput: parseFloat(station.powerOutput),
+        connectorType: station.connectorType
+      })
+    })
+
+    if (response.status === 401) {
+      router.push('/login')
+      throw new Error('Session expired, please login again')
+    }
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to create station')
+    }
+
+    showMessage('Station added successfully!', 'success')
+    resetForm()
+    router.push('/')
+  } catch (err) {
+    console.error('Error:', err)
+    showMessage(err.message || 'Failed to save station', 'error')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const resetForm = () => {
+  Object.assign(station, {
+    name: '',
+    latitude: null,
+    longitude: null,
+    powerOutput: '',
+    connectorType: '',
+    status: 'Active'
+  })
+
+  if (marker && mapInstance) {
+    mapInstance.removeLayer(marker)
+    marker = null
+  }
+}
+
+const getCurrentLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude, longitude } = coords
+        if (mapInstance) {
+          mapInstance.setView([latitude, longitude], 15)
+          if (marker) mapInstance.removeLayer(marker)
+          marker = window.L.marker([latitude, longitude])
+            .addTo(mapInstance)
+            .bindPopup(`📍 Current Location<br>Lat: ${latitude.toFixed(6)}<br>Lng: ${longitude.toFixed(6)}`)
+            .openPopup()
+          station.latitude = parseFloat(latitude.toFixed(6))
+          station.longitude = parseFloat(longitude.toFixed(6))
+        }
+      },
+      () => showMessage('Unable to get your location. Please select manually on the map.', 'error')
+    )
+  } else {
+    showMessage('Geolocation is not supported by this browser.', 'error')
+  }
+}
+
+onMounted(() => {
+  initializeMap()
+})
+
+const initializeMap = () => {
+  if (!window.L) {
+    loadLeaflet()
+  } else {
+    initMap()
+  }
+}
+
+const loadLeaflet = () => {
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+  document.head.appendChild(link)
+
+  const script = document.createElement('script')
+  script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  script.onload = initMap
+  document.head.appendChild(script)
+}
+
+const initMap = () => {
+  const defaultLat = 12.9716
+  const defaultLng = 77.5946
+
+  mapInstance = window.L.map(mapRef.value).setView([defaultLat, defaultLng], 13)
+  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapInstance)
+
+  mapInstance.on('click', (e) => {
+    const { lat, lng } = e.latlng
+    if (marker) mapInstance.removeLayer(marker)
+    marker = window.L.marker([lat, lng])
+      .addTo(mapInstance)
+      .bindPopup(`📍 Selected Location<br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`)
+      .openPopup()
+
+    station.latitude = parseFloat(lat.toFixed(6))
+    station.longitude = parseFloat(lng.toFixed(6))
+  })
+}
 </script>
+
+<style scoped>
+/* Add any component-specific styles here */
+</style>

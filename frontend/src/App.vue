@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="bg-white/80 backdrop-blur-lg shadow-lg border-b border-gray-100 p-4 sm:p-6 flex justify-between items-center sticky top-0 z-50">
       <h1 class="text-xl sm:text-3xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-        ⚡ Charging Station Manager
+         Charging Station Manager
       </h1>
       <nav class="hidden sm:flex space-x-4 sm:space-x-8">
         <router-link
