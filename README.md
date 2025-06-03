@@ -93,15 +93,15 @@ npm test
 ##  Screenshots
 
 ### Registration Page
-![Registration Page](./screenshots/register.png)
+![Registration Page](![alt text](image.png))
 Description: User registration interface for creating a new charging station account.
 
 ### Dashboard
-![Dashboard](./screenshots/dashboard.png)
+![Dashboard](![alt text](image-1.png))
 Description: Main dashboard showing charging station statistics and map view.
 
 ### Login Page
-![Login Page](./screenshots/login.png)
+![Login Page](![alt text](image-2.png))
 Description: User authentication interface for existing users.
 
 ##  Deployment
