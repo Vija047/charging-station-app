@@ -215,7 +215,7 @@ const activeStations = computed(() =>
 const fetchStations = async () => {
   try {
     isLoading.value = true
-    const response = await fetch('https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations')
+    const response = await fetch('https://charging-station-app-bay.vercel.app/api/stations')
     if (!response.ok) throw new Error('Failed to fetch stations')
     const data = await response.json()
     
@@ -242,8 +242,8 @@ const fetchStations = async () => {
 const saveStation = async (station) => {
   try {
     const url = station._id 
-      ? `https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations/${station._id}`
-      : 'https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations'
+      ? `https://charging-station-app-bay.vercel.app/api/stations/${station._id}`
+      : 'https://charging-station-app-bay.vercel.app/api/stations'
     
     const response = await fetch(url, {
       method: station._id ? 'PUT' : 'POST',
@@ -265,7 +265,7 @@ const saveStation = async (station) => {
 
 const deleteStation = async (id) => {
   try {
-    const response = await fetch(`https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations/${id}`, {
+    const response = await fetch(`https://charging-station-app-bay.vercel.app/api/stations/${id}`, {
       method: 'DELETE'
     })
     if (!response.ok) throw new Error('Failed to delete station')

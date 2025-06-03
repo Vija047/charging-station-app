@@ -117,7 +117,7 @@ const handleRegister = async () => {
   message.value = ''
 
   try {
-    const response = await fetch('https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/auth/register', {
+    const response = await fetch('https://charging-station-app-bay.vercel.app/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

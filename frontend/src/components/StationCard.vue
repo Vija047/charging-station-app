@@ -120,7 +120,7 @@ const error = ref(null)
 
 const fetchStations = async () => {
   try {
-    const response = await fetch('https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations', {
+    const response = await fetch('https://charging-station-app-bay.vercel.app/api/stations', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -136,7 +136,7 @@ const fetchStations = async () => {
 
 const handleDelete = async (id) => {
   try {
-    const response = await fetch(`https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations/${id}`, {
+    const response = await fetch(`https://charging-station-app-bay.vercel.app/api/stations/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
