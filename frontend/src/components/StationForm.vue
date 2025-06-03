@@ -160,7 +160,7 @@ const handleSubmit = async () => {
       throw new Error('Please login to add a station')
     }
 
-    const response = await fetch('http://localhost:5000/api/stations', {
+    const response = await fetch('https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/stations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

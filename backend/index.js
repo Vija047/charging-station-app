@@ -13,7 +13,7 @@ const app = express();
 
 // Enable CORS for frontend origin
 app.use(cors({
-  origin: 'http://localhost:5173', // your frontend URL
+  origin: 'https://charging-station-app-2nfy.vercel.app', // your frontend URL
   credentials: true, // if you want to send cookies/auth headers
 }));
 

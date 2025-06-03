@@ -148,7 +148,7 @@ const showMessage = (text, type = 'success') => {
 const handleLogin = async () => {
   isLoading.value = true
   try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
+    const response = await fetch('https://charging-station-app-git-main-vijays-projects-f149edb1.vercel.app/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
