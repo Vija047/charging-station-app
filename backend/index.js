@@ -22,6 +22,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/stations', stationRoutes);
 
+app.get('/', (req, res) => {
+  res.send('backend is running...');
+});
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
